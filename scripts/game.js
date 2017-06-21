@@ -1207,6 +1207,10 @@
                     finder: null
                 };
 
+                this.settings = {
+                    ghosts_speed: options.ghosts_speed || 500
+                };
+
                 canvas.width = options.width * options.grid_size;
                 canvas.height = options.height * options.grid_size;
             }
@@ -1265,7 +1269,7 @@
                         }
                     })(this));
 
-                    Tick.interval('manageGhosts', this.manageGhosts.bind(this), 350);
+                    Tick.interval('manageGhosts', this.manageGhosts.bind(this), this.settings.ghosts_speed);
 
                     return ghost;
                 },
@@ -1348,7 +1352,7 @@
 
     window.onload = function () {
         var game = new Game(document.getElementById("gc"), {
-            height: 31, width: 31, grid_size: 25
+            height: 31, width: 31, grid_size: 25, ghosts_speed: 400
         });
 
         game.init();
