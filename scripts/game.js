@@ -169,6 +169,15 @@
                 return ticks[name];
             },
 
+            animation: function (name, callback) {
+                if (ticks[name] === null || ticks[name] === undefined) {
+                    ticks[name] = _.requestAnimation(function () {
+                        callback();
+                        delete ticks[name];
+                    })
+                }
+            },
+
             clear: function (name) {
                 if (ticks[name] !== null || ticks[name] !== undefined) {
                     clearTimeout(ticks[name]);
@@ -751,7 +760,6 @@
         function Maze(ctx, options) {
             this.map = [];
             this.components = [];
-            this.paint_ticked = null;
 
             this.ctx = ctx;
 
@@ -760,48 +768,6 @@
                 width: 21,
                 grid_size: 15
             }, options || {});
-        }
-
-        function paint() {
-            // Options
-            var gs = this.settings.grid_size, ctx = this.ctx;
-
-            // BackGround
-            ctx.beginPath();
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, this.settings.width * gs, this.settings.height * gs);
-            ctx.closePath();
-
-            // Wall
-            ctx.beginPath();
-            _.each(this.map, function (row, x) {
-                _.each(row, function (cell, y) {
-                    if (cell === 1) {
-                        ctx.fillStyle = "blue";
-                        ctx.fillRect(y * gs, x * gs, gs, gs);
-                    }
-                })
-            });
-            ctx.closePath();
-
-            // Components
-            _.each(_.filter(this.components, function (component) {
-                return component.deleteRequest;
-            }), function (component) {
-                _.each(component, function (v, k) {
-                    component[k] = null;
-                });
-                this.removeComponent(component);
-                component.detach();
-
-            }.bind(this));
-            _.each(_.filter(this.components, function (component) {
-                return component instanceof Paintable;
-            }), function (component) {
-                component.paint(ctx, gs);
-            });
-
-            this.paint_ticked = null;
         }
 
         _.prototize(Maze, /** @lends {Maze.prototype} */ {
@@ -835,10 +801,46 @@
                 return this;
             },
             paint: function () {
-                if (this.paint_ticked === null) {
-                    _.requestAnimation(paint.bind(this));
-                    this.paint_ticked = true;
-                }
+                Tick.animation('maze.paint', function () {
+                    // Options
+                    var gs = this.settings.grid_size, ctx = this.ctx;
+
+                    // BackGround
+                    ctx.beginPath();
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(0, 0, this.settings.width * gs, this.settings.height * gs);
+                    ctx.closePath();
+
+                    // Wall
+                    ctx.beginPath();
+                    _.each(this.map, function (row, x) {
+                        _.each(row, function (cell, y) {
+                            if (cell === 1) {
+                                ctx.fillStyle = "blue";
+                                ctx.fillRect(y * gs, x * gs, gs, gs);
+                            }
+                        })
+                    });
+                    ctx.closePath();
+
+                    // Components
+                    _.each(_.filter(this.components, function (component) {
+                        return component.deleteRequest;
+                    }), function (component) {
+                        _.each(component, function (v, k) {
+                            component[k] = null;
+                        });
+                        this.removeComponent(component);
+                        component.detach();
+
+                    }.bind(this));
+                    _.each(_.filter(this.components, function (component) {
+                        return component instanceof Paintable;
+                    }), function (component) {
+                        component.paint(ctx, gs);
+                    });
+
+                }.bind(this));
             },
             print: function () {
                 var output = '\n';
