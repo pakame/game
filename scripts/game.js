@@ -522,19 +522,38 @@
                 ctx.beginPath();
                 ctx.strokeStyle = options.color;
                 ctx.lineWidth = options.weight;
-                var sx, sy;
-                if (px < tx) {
-                    sx = tx * gs + options.padding;
-                    sy = ty * gs + (gs / 2);
+
+                var sx = tx * gs,
+                    sy = ty * gs;
+
+                if(Math.abs(tx - px) > 1){
+                    if (px < tx) {
+                        sx += gs - options.padding;
+                        sy += gs / 2;
+                    } else if (px > tx) {
+                        sx += options.padding;
+                        sy += gs / 2;
+                    }
+                } else if (Math.abs(ty - py) > 1) {
+                    if (py < ty) {
+                        sx += gs / 2;
+                        sy += gs - options.padding;
+                    } else if (py > ty) {
+                        sx += gs / 2;
+                        sy += options.padding;
+                    }
+                } else if (px < tx) {
+                    sx += options.padding;
+                    sy += gs / 2;
                 } else if (px > tx) {
-                    sx = tx * gs + gs - options.padding;
-                    sy = ty * gs + (gs / 2);
+                    sx += gs - options.padding;
+                    sy += gs / 2;
                 } else if (py < ty) {
-                    sx = tx * gs + (gs / 2);
-                    sy = ty * gs + options.padding;
+                    sx += gs / 2;
+                    sy += options.padding;
                 } else if (py > ty) {
-                    sx = tx * gs + (gs / 2);
-                    sy = ty * gs + gs - options.padding;
+                    sx += gs / 2;
+                    sy += gs - options.padding;
                 }
                 ctx.moveTo(ty * gs + (gs / 2), tx * gs + (gs / 2));
                 ctx.lineTo(sy, sx);
